@@ -152,6 +152,7 @@ executables and libraries for that target.
 
 | Platform                        | Variant            | Command                          |
 |---------------------------------|--------------------|----------------------------------|
+| Apple II / IIe                  | ProDOS 8 SYS       | `mos-apple2-clang`               |
 | Atari 2600                      | 4K                 | `mos-atari2600-4k-clang`         |
 | Atari 2600                      | TigerVision 3E     | `mos-atari2600-3e-clang`         |
 | Atari 5200                      | Super Cart         | `mos-atari5200-supercart-clang`  |

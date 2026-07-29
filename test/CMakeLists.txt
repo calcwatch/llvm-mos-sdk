@@ -32,6 +32,7 @@ function(add_test_target target)
 endfunction()
 
 add_custom_target(test)
+add_test_target(apple2)
 add_test_target(nes-nrom)
 add_test_target(nes-cnrom)
 add_test_target(nes-gtrom)
