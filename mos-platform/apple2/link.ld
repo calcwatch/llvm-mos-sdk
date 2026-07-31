@@ -5,13 +5,17 @@
  * below ProDOS's $bf00 global page is used for the LLVM-MOS software stack.
  */
 
-/* ProDOS reserves $00-$3f. */
-__rc0 = 0x40;
+/*
+ * ProDOS and its disk drivers use $3a-$4e, but leave $00-$1f available to
+ * system programs.  Keep the rest of the compiler-allocated zero page at
+ * $60 so it also remains clear of the Monitor workspace.
+ */
+__rc0 = 0x00;
 INCLUDE imag-regs.ld
-ASSERT(__rc31 == 0x5f, "Inconsistent zero page map.")
+ASSERT(__rc31 == 0x1f, "Inconsistent zero page map.")
 
 MEMORY {
-    zp : ORIGIN = __rc31 + 1, LENGTH = 0x100 - (__rc31 + 1)
+    zp : ORIGIN = 0x60, LENGTH = 0xa0
     ram (rw) : ORIGIN = 0x2000, LENGTH = 0x8f00
 }
 
