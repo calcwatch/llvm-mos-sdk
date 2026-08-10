@@ -44,6 +44,9 @@ The LLVM-MOS compiler toolchain and platform libraries.
   - [MMC1](https://www.nesdev.org/wiki/MMC1)
   - [MMC3](https://www.nesdev.org/wiki/MMC3)
   - [Family Computer Disk System](https://www.nesdev.org/wiki/Family_Computer_Disk_System)
+- [Super Nintendo Entertainment System](https://en.wikipedia.org/wiki/Super_Nintendo_Entertainment_System)
+  - LoROM cartridge
+  - HiROM cartridge
 - [Ohio Scientific Challenger 1P](https://en.wikipedia.org/wiki/Ohio_Scientific#Superboard_II,_Challenger_1P_(1978))
 - [OLIMEX Neo6502](https://www.olimex.com/Products/Retro-Computers/Neo6502/open-source-hardware)
 - [Picocomputer 6502](https://picocomputer.github.io) (RP6502)
@@ -184,8 +187,64 @@ executables and libraries for that target.
 | PC Engine                       | Standard           | `mos-pce-clang`                  |
 | PC Engine                       | CD                 | `mos-pce-cd-clang`               |
 | RPC/8e (RedPower 2)             | -                  | `mos-rpc8e-clang`                |
+| Super Nintendo                  | LoROM              | `mos-snes-lorom-clang`           |
+| Super Nintendo                  | HiROM              | `mos-snes-hirom-clang`           |
 | Watara Supervision              | -                  | `mos-supervision-clang`          |
 | 6502 simulator                  | -                  | `mos-sim-clang`                  |
+
+LoROM builds default to a 32 KiB image. Select a larger power-of-two image
+up to 4 MiB with `-Wl,--defsym=__rom_size=<KiB>`. Additional 32 KiB data banks
+can be populated with `SNES_LOROM_BANK(bank)` and read with
+`snes_lorom_read8()`:
+
+```c
+#include <snes-lorom.h>
+
+SNES_LOROM_BANK(1) const unsigned char tiles[] = {1, 2, 3, 4};
+
+int main(void) {
+  return snes_lorom_read8(SNES_LOROM_ADDRESS(1, tiles));
+}
+```
+
+```console
+mos-snes-lorom-clang -Os -Wl,--defsym=__rom_size=128 -o game.sfc game.c
+```
+
+HiROM builds use contiguous 64 KiB banks and default to a 64 KiB image. Their
+size in KiB is configured with the same `__rom_size` symbol, while banked data
+uses `SNES_HIROM_BANK(bank)` and `snes_hirom_read8()`:
+
+```c
+#include <snes-hirom.h>
+
+SNES_HIROM_BANK(1) const unsigned char music[] = {1, 2, 3, 4};
+
+int main(void) {
+  return snes_hirom_read8(SNES_HIROM_ADDRESS(1, music));
+}
+```
+
+```console
+mos-snes-hirom-clang -Os -Wl,--defsym=__rom_size=256 -o game.sfc game.c
+```
+
+LLVM-MOS C pointers contain only a 16-bit bank-local address. The
+`SNES_*_ADDRESS` macros explicitly keep that offset together with its
+mapper-specific ROM bank index; valid indices are 0-127 for LoROM and 0-63 for
+HiROM. LoROM local addresses must be $8000-$FFFF, while HiROM allows the full
+$0000-$FFFF range. The low-level `snes_make_rom_address()` constructor does not
+validate these mapping-specific ranges; validation occurs when the address is
+read. These initial APIs provide byte reads and a representation suitable for
+future bulk copy and DMA helpers; they are not flat 24-bit C pointers or literal
+CPU bank addresses (for example, LoROM index 1 is accessed through CPU bank
+$81, while HiROM index 1 uses CPU bank $C1).
+
+The cartridge vectors refer to weak `nmi`, `irq`, `cop`, `brk`, and `abort`
+assembly handlers that default to `RTI`. Overrides must use the interrupt ABI,
+for example `__attribute__((interrupt)) void nmi(void)`, or be supplied in
+assembly and return with `RTI`; an ordinary C function returning with `RTS` is
+not a valid vector handler.
 
 
 ```console

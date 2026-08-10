@@ -26,6 +26,7 @@ else()
     USES_TERMINAL_CONFIGURE On
     USES_TERMINAL_BUILD On
     USES_TERMINAL_INSTALL On
+    DEPENDS snes-lorom-checksum snes-hirom-checksum
     BUILD_ALWAYS On)
   ExternalProject_Get_Property(mos-platform INSTALL_DIR)
   install(DIRECTORY ${INSTALL_DIR}/ DESTINATION .)
@@ -86,4 +87,7 @@ add_subdirectory(pce)
 add_subdirectory(pce-cd)
 add_subdirectory(rp6502)
 add_subdirectory(supervision)
+add_subdirectory(snes)
+add_subdirectory(snes-lorom)
+add_subdirectory(snes-hirom)
 add_subdirectory(vic20)
