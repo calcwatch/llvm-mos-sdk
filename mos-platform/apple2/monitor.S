@@ -1,0 +1,7 @@
+.include "apple2.inc"
+
+.global __APPLE2_RDKEY
+__APPLE2_RDKEY = APPLE2_RDKEY
+
+.global __APPLE2_COUT
+__APPLE2_COUT = APPLE2_COUT

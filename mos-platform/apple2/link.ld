@@ -24,11 +24,12 @@ REGION_ALIAS("c_writeable", ram)
 
 /*
  * A SYS file has no header or entry-point field: ProDOS jumps directly to
- * $2000. Keep .text first in the load image. In particular, the generic c.ld
- * order puts the load image for initialized zero-page data before .text,
- * which would make ProDOS execute that data as code.
+ * $2000. Keep the three-byte entry stub first in the load image, followed by
+ * the normal C sections. In particular, initialized zero-page data must not
+ * precede the entry stub in the output file.
  */
 SECTIONS {
+    .sys_entry : { KEEP(*(.sys_entry)) } >ram
     INCLUDE text.ld
     INCLUDE rodata.ld
     INCLUDE data.ld
@@ -36,7 +37,10 @@ SECTIONS {
     INCLUDE bss.ld
     INCLUDE noinit.ld
 }
-ASSERT(_start == ORIGIN(ram), "ProDOS SYS entry point must be $2000.")
+ASSERT(ADDR(.sys_entry) == ORIGIN(ram),
+       "ProDOS SYS entry point must be $2000.")
+ASSERT(SIZEOF(.sys_entry) == 3,
+       "ProDOS SYS entry must be a three-byte JMP.")
 
 /* The soft stack grows down through the $af00-$beff area. */
 __stack = 0xbf00;
