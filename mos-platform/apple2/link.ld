@@ -30,12 +30,7 @@ REGION_ALIAS("c_writeable", ram)
  */
 SECTIONS {
     .sys_entry : { KEEP(*(.sys_entry)) } >ram
-    INCLUDE text.ld
-    INCLUDE rodata.ld
-    INCLUDE data.ld
-    INCLUDE zp.ld
-    INCLUDE bss.ld
-    INCLUDE noinit.ld
+    INCLUDE c.ld
 }
 ASSERT(ADDR(.sys_entry) == ORIGIN(ram),
        "ProDOS SYS entry point must be $2000.")
